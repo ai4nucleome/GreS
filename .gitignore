@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Data and large files
+data/
+embeddings/
+*.h5ad
+*.pth
+*.pt
+*.npy
+*.npz
+
+# Logs and results
+*.log
