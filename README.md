@@ -59,6 +59,8 @@ Your spatial transcriptomics data should be in `.h5ad` format with:
 *   `adata.var_names`: Gene symbols.
 *   `adata.obs['ground_truth']`: (Optional) Ground truth labels for supervised evaluation.
 
+We provide example data (DLPFC sample 151507) in the `data/raw_h5ad/` directory of this repository.
+
 ### 2. Directory Setup
 Place your raw `.h5ad` files in the `data/raw_h5ad/` directory. The filename (without extension) will be used as the `dataset_id`.
 
