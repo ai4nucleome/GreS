@@ -14,9 +14,10 @@ venv/
 *.swp
 
 # Data and large files
-data/
+data/generated/
+data/npys_grn/
+data/result/
 embeddings/
-*.h5ad
 *.pth
 *.pt
 *.npy
