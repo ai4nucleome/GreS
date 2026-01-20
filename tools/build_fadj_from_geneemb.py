@@ -179,7 +179,7 @@ def main():
     script_dir = get_script_dir()
     
     if args.data_dir is None:
-        data_dir = os.path.join(script_dir, "data", "generated", args.dataset_id)
+        data_dir = os.path.join(script_dir, "../data", "generated", args.dataset_id)
     else:
         data_dir = args.data_dir
         if not os.path.isabs(data_dir):

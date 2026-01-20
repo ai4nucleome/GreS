@@ -19,50 +19,37 @@ Key features include:
 ## Table of Contents
 
 * [Installation](#installation)
-* [Repository Structure](#repository-structure)
 * [Data Preparation](#data-preparation)
 * [Usage](#usage)
     *   [Preprocessing](#preprocessing)
     *   [Training](#training)
 * [Output](#output)
-* [Citation](#citation)
+* [Repository Structure](#repository-structure)
 * [License](#license)
 
 ## Installation
 
-### Option 1: Conda (Recommended)
+### Quick Setup (Using Requirements File)
+
+We provide a requirements file for quick environment setup. You can install the dependencies using:
 
 ```bash
-# Create and activate environment
-conda create -n gres python=3.9
-conda activate gres
-
-# Install PyTorch (adjust cuda version as needed)
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-
-# Install dependencies
-pip install scanpy pandas numpy scipy scikit-learn matplotlib tqdm
+pip install -r environment/requirements_sc.txt
 ```
 
-## Repository Structure
+### Download Resources (Required)
 
+GreS requires pretrained semantic embeddings and GRN networks. Please download them from our [Hugging Face repository](https://huggingface.co/datasets/ylu99/Gres) and place them in the `embeddings/` directory:
+
+The directory structure should look like this after downloading:
 ```
 GreS/
-├── config/                 # Configuration files (e.g., DLPFC.ini)
-├── data/
-│   ├── raw_h5ad/           # Place your input .h5ad files here
-│   ├── generated/          # Output of preprocessing (h5ad, graphs, etc.)
-│   ├── npys_grn/           # Generated spot embeddings
-│   └── result/             # Training results and logs
-├── embeddings/             # Pretrained semantic embeddings and GRN networks
-├── preprocess/             # Preprocessing scripts
-├── fig/                    # Figure assets
-├── models.py               # GreS model architecture
-├── train.py                # Main training script
-├── run_preprocess.sh       # Automated preprocessing pipeline
-└── README.md
+├── embeddings/
+│   ├── pretrained_gene_embeddings.pt
+│   ├── vocab.json
+│   └── weighted_networks_nsga2r_final.rds
+└── ...
 ```
-
 ## Data Preparation
 
 ### 1. Prepare H5AD Files
@@ -70,6 +57,7 @@ Your spatial transcriptomics data should be in `.h5ad` format with:
 *   `adata.X`: **Raw integer counts** of gene expression.
 *   `adata.obsm['spatial']`: Spatial coordinates (x, y).
 *   `adata.var_names`: Gene symbols.
+*   `adata.obs['ground_truth']`: (Optional) Ground truth labels for supervised evaluation.
 
 ### 2. Directory Setup
 Place your raw `.h5ad` files in the `data/raw_h5ad/` directory. The filename (without extension) will be used as the `dataset_id`.
@@ -86,16 +74,14 @@ data/raw_h5ad/
 
 ### Preprocessing
 
-We provide a comprehensive shell script `run_preprocess.sh` that automates the entire preprocessing workflow: data cleaning, semantic embedding generation (GRN diffusion), spot embedding aggregation, and feature graph construction.
+We provide a comprehensive shell script `tools/run_preprocess.sh` that automates the entire preprocessing workflow: data cleaning, semantic embedding generation (GRN diffusion), spot embedding aggregation, and feature graph construction.
 
 ```bash
-# Syntax: ./run_preprocess.sh <dataset_id> <config_name>
+# Syntax: ./tools/run_preprocess.sh <dataset_id> <config_name>
 
-# Example 1: DLPFC dataset (using DLPFC config)
-./run_preprocess.sh 151507 DLPFC
+# Example: DLPFC dataset (using DLPFC config)
+./tools/run_preprocess.sh 151507 DLPFC
 
-# Example 2: Embryo dataset (using Embryo config)
-./run_preprocess.sh E1S1 Embryo
 ```
 
 **Pipeline Steps:**
@@ -106,12 +92,11 @@ We provide a comprehensive shell script `run_preprocess.sh` that automates the e
 
 ### Training
 
-Train the GreS model using `train.py`. The script supports both supervised (with ground truth labels) and unsupervised modes.
+Train the GreS model using `tools/train.py`. 
 
-#### Basic Usage
 
 ```bash
-python train.py \
+python tools/train.py \
     --dataset_id 151507 \
     --config_name DLPFC \
     --llm_emb_dir data/npys_grn/ \
@@ -124,9 +109,7 @@ python train.py \
 | :--- | :--- | :--- |
 | `--dataset_id` | Identifier for the dataset (must match preprocessing) | `Mouse_Brain_Anterior` |
 | `--config_name` | Configuration file to use (e.g., `DLPFC`, `Embryo`) | Auto-inferred |
-| `--use_llm` | Whether to use semantic embedding modulation (`true` or `false`) | `true` |
 | `--n_clusters` | Force unsupervised mode by specifying cluster count manually | `None` |
-| `--save_best_ckpt` | Save the model checkpoint with the best performance | `True` |
 | `--run_name` | Sub-directory name for saving results | `default` |
 
 ## Output
@@ -139,13 +122,27 @@ Results are saved in `data/result/<config>/<dataset_id>/<run_name>/`:
 *   **`checkpoints/`**: Saved model checkpoints (`.pt`).
 *   **`train.log`**: Full training log.
 
-## Citation
-
-If you use GreS in your research, please cite:
+## Repository Structure
 
 ```
-(Coming Soon)
+GreS/
+├── config/                 # Configuration files (e.g., DLPFC.ini)
+├── data/
+│   ├── raw_h5ad/           # Place your input .h5ad files here
+│   ├── generated/          # Output of preprocessing (h5ad, graphs, etc.)
+│   ├── npys_grn/           # Generated spot embeddings
+│   └── result/             # Training results and logs
+├── embeddings/             # Pretrained semantic embeddings and GRN networks
+├── preprocess/             # Preprocessing scripts
+├── fig/                    # Figure assets
+├── tools/                  # Main scripts and tools
+│   ├── models.py           # GreS model architecture
+│   ├── train.py            # Main training script
+│   ├── run_preprocess.sh   # Automated preprocessing pipeline
+│   └── ...
+└── README.md
 ```
+
 
 ## License
 

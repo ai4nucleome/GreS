@@ -162,7 +162,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     if args.data_dir is None:
-        data_dir = os.path.join(script_dir, "data", "generated", dataset_id)
+        data_dir = os.path.join(script_dir, "../data", "generated", dataset_id)
     else:
         data_dir = args.data_dir
         if not os.path.isabs(data_dir):
@@ -170,7 +170,7 @@ def main():
     
     # Output directory
     if args.out_dir is None:
-        out_dir = os.path.join(script_dir, "data", "npys_grn")
+        out_dir = os.path.join(script_dir, "../data", "npys_grn")
     else:
         out_dir = args.out_dir
         if not os.path.isabs(out_dir):

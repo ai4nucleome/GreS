@@ -21,6 +21,10 @@ from sklearn.cluster import KMeans
 from tqdm import tqdm
 import scanpy as sc
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+sys.path.append(PROJECT_ROOT)
+
 from models import GreS
 from preprocess.config import Config
 from utils import (
@@ -36,12 +40,11 @@ from utils import (
 
 warnings.filterwarnings("ignore")
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# SCRIPT_DIR and PROJECT_ROOT setup moved to top
 
 
 def evaluate_kmeans_repeated(emb, labels, n_clusters, repeats=1, seed_base=0):
-    """
-    Run KMeans multiple times with different seeds and return the best result (by ARI).
     
     Args:
         emb: embedding matrix (n_samples, n_features)
@@ -78,14 +81,14 @@ def evaluate_kmeans_repeated(emb, labels, n_clusters, repeats=1, seed_base=0):
     return best_result
 
 
-def _resolve_under_script_dir(p: str) -> str:
+def _resolve_under_project_root(p: str) -> str:
     """
-    Resolve a user-provided path. If it's relative, make it relative to this script's directory.
+    Resolve a user-provided path. If it's relative, make it relative to the project root.
     """
     if p is None:
         return p
     p = str(p)
-    return p if os.path.isabs(p) else os.path.join(SCRIPT_DIR, p)
+    return p if os.path.isabs(p) else os.path.join(PROJECT_ROOT, p)
 
 
 def _assert_path_inside_project(p: str, description: str = "path") -> None:
@@ -95,12 +98,12 @@ def _assert_path_inside_project(p: str, description: str = "path") -> None:
     if p is None:
         return
     real_p = os.path.realpath(p)
-    real_script_dir = os.path.realpath(SCRIPT_DIR)
-    if not (real_p == real_script_dir or real_p.startswith(real_script_dir + os.sep)):
+    real_root = os.path.realpath(PROJECT_ROOT)
+    if not (real_p == real_root or real_p.startswith(real_root + os.sep)):
         raise RuntimeError(
             f"[PATH GUARD] {description} would write outside project!\n"
             f"  path: {real_p}\n"
-            f"  allowed root: {real_script_dir}\n"
+            f"  allowed root: {real_root}\n"
             f"Refusing to proceed. Please use a path inside the project."
         )
 
@@ -118,7 +121,7 @@ def load_cached_fadj(dataset_id: str, source: str, k: int, data_dir: str = None)
         fadj: scipy sparse matrix (coo or csr)
     """
     if data_dir is None:
-        fadj_dir = os.path.join(SCRIPT_DIR, "data", "generated", dataset_id)
+        fadj_dir = os.path.join(PROJECT_ROOT, "data", "generated", dataset_id)
     else:
         fadj_dir = data_dir
     fadj_path = os.path.join(fadj_dir, f"fadj_spotemb_{source}_k{k}.npz")
@@ -171,7 +174,7 @@ def load_data(dataset, data_path_prefix="", data_dir: str = None):
     if data_dir is not None:
         path = os.path.join(data_dir, "data.h5ad")
     else:
-        base_path = os.path.join(SCRIPT_DIR, "data", "generated")
+        base_path = os.path.join(PROJECT_ROOT, "data", "generated")
         if data_path_prefix:
             path = os.path.join(base_path, data_path_prefix, dataset, "data.h5ad")
         else:
@@ -273,7 +276,7 @@ if __name__ == "__main__":
                         help='Override the default generated data directory.')
     parser.add_argument('--config_name', type=str, default=None,
                         help='Override which config ini to use (without .ini).')
-    parser.add_argument('--result_dir', type=str, default=os.path.join(SCRIPT_DIR, 'data', 'result'),
+    parser.add_argument('--result_dir', type=str, default=os.path.join(PROJECT_ROOT, 'data', 'result'),
                         help='Root directory to save results.')
     parser.add_argument('--run_name', type=str, default='default',
                         help='Sub-directory name under {result_dir}/{config}/{dataset_id}/ for this run.')
@@ -341,13 +344,13 @@ if __name__ == "__main__":
     # Parse use_llm from string to bool
     args.use_llm = (args.use_llm.lower() == 'true')
 
-    # Resolve all user paths relative to script dir
-    args.llm_emb_dir = _resolve_under_script_dir(args.llm_emb_dir)
-    args.result_dir = _resolve_under_script_dir(args.result_dir)
+    # Resolve all user paths relative to project root
+    args.llm_emb_dir = _resolve_under_project_root(args.llm_emb_dir)
+    args.result_dir = _resolve_under_project_root(args.result_dir)
     if args.ckpt_dir is not None:
-        args.ckpt_dir = _resolve_under_script_dir(args.ckpt_dir)
+        args.ckpt_dir = _resolve_under_project_root(args.ckpt_dir)
     if args.data_dir is not None:
-        args.data_dir = _resolve_under_script_dir(args.data_dir)
+        args.data_dir = _resolve_under_project_root(args.data_dir)
 
     # Path guard: ensure outputs stay inside project
     _assert_path_inside_project(args.result_dir, "result_dir")
@@ -360,7 +363,7 @@ if __name__ == "__main__":
 
     print(f"Processing dataset: {dataset_id}")
 
-    config_file_path = os.path.join(SCRIPT_DIR, 'config', f'{config_name}.ini')
+    config_file_path = os.path.join(PROJECT_ROOT, 'config', f'{config_name}.ini')
     config = Config(config_file_path)
     
     # Apply CLI overrides
@@ -401,8 +404,8 @@ if __name__ == "__main__":
     if args.data_dir is not None:
         data_dir = args.data_dir
     elif config_name == "Embryo":
-        embryo_dir = os.path.join(SCRIPT_DIR, "data", "generated", "Embryo", dataset_id)
-        flat_dir = os.path.join(SCRIPT_DIR, "data", "generated", dataset_id)
+        embryo_dir = os.path.join(PROJECT_ROOT, "data", "generated", "Embryo", dataset_id)
+        flat_dir = os.path.join(PROJECT_ROOT, "data", "generated", dataset_id)
         if os.path.exists(os.path.join(embryo_dir, "data.h5ad")):
             data_dir = embryo_dir
         elif os.path.exists(os.path.join(flat_dir, "data.h5ad")):
@@ -414,7 +417,7 @@ if __name__ == "__main__":
         else:
             data_dir = embryo_dir
     else:
-        data_dir = os.path.join(SCRIPT_DIR, "data", "generated", dataset_id)
+        data_dir = os.path.join(PROJECT_ROOT, "data", "generated", dataset_id)
 
     adata, features, labels, sadj, graph_nei, graph_neg = load_data(
         dataset_id, data_path_prefix=data_path_prefix_str, data_dir=data_dir

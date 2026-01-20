@@ -59,17 +59,14 @@ print_progress() {
 # Path Configuration
 # ============================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
 
 # Data directories
 # Note: Raw data path logic is now handled inside python scripts based on standardized h5ad
-GENERATED_DIR="${SCRIPT_DIR}/data/generated/${DATASET}"
+GENERATED_DIR="${PROJECT_ROOT}/data/generated/${DATASET}"
 
 # Embedding resources
-if [ -d "${SCRIPT_DIR}/embeddings" ]; then
-    EMBED_DIR="${SCRIPT_DIR}/embeddings"
-else
-    EMBED_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)/embeddings"
-fi
+EMBED_DIR="${PROJECT_ROOT}/embeddings"
 
 # Input files for semantic embedding generation
 VOCAB="${EMBED_DIR}/vocab.json"
@@ -125,7 +122,7 @@ print_progress ${CURRENT_STEP} ${TOTAL_STEPS} "Data Preprocessing"
 echo "Running: python preprocess/preprocess_data.py --dataset_id ${DATASET} --config_name ${CONFIG_NAME}"
 echo "─────────────────────────────────────────────────────────────"
 
-cd "${SCRIPT_DIR}"
+cd "${PROJECT_ROOT}"
 python preprocess/preprocess_data.py --dataset_id "${DATASET}" --config_name "${CONFIG_NAME}"
 
 echo ""
@@ -137,10 +134,10 @@ echo "  ✓ Output: ${GENERATED_DIR}/data.h5ad"
 CURRENT_STEP=2
 print_progress ${CURRENT_STEP} ${TOTAL_STEPS} "Semantic Embedding Generation (GRN Diffusion)"
 
-echo "Running: python build_programST_assets.py ..."
+echo "Running: python tools/build_programST_assets.py ..."
 echo "─────────────────────────────────────────────────────────────"
 
-python build_programST_assets.py \
+python tools/build_programST_assets.py \
     --h5ad "${GENERATED_DIR}/data.h5ad" \
     --vocab "${VOCAB}" \
     --embedding "${EMBEDDING}" \
@@ -163,10 +160,10 @@ echo "    • ${GENERATED_DIR}/grn_gene_embeddings.pt"
 CURRENT_STEP=3
 print_progress ${CURRENT_STEP} ${TOTAL_STEPS} "Spot Embedding Generation (topk=${TOPK})"
 
-echo "Running: python grn_generate_spot_embedding.py --dataset_id ${DATASET} --topk ${TOPK}"
+echo "Running: python tools/grn_generate_spot_embedding.py --dataset_id ${DATASET} --topk ${TOPK}"
 echo "─────────────────────────────────────────────────────────────"
 
-python grn_generate_spot_embedding.py \
+python tools/grn_generate_spot_embedding.py \
     --dataset_id "${DATASET}" \
     --topk "${TOPK}"
 
@@ -179,10 +176,10 @@ echo "  ✓ Output: data/npys_grn/embeddings_${DATASET}.npy"
 CURRENT_STEP=4
 print_progress ${CURRENT_STEP} ${TOTAL_STEPS} "Feature Adjacency Graph (k=${FADJ_K})"
 
-echo "Running: python build_fadj_from_geneemb.py --dataset_id ${DATASET} --k ${FADJ_K}"
+echo "Running: python tools/build_fadj_from_geneemb.py --dataset_id ${DATASET} --k ${FADJ_K}"
 echo "─────────────────────────────────────────────────────────────"
 
-python build_fadj_from_geneemb.py \
+python tools/build_fadj_from_geneemb.py \
     --dataset_id "${DATASET}" \
     --k "${FADJ_K}" \
     --overwrite
@@ -214,7 +211,7 @@ echo ""
 echo "┌────────────────────────────────────────────────────────────┐"
 echo "│  Next step: Run training                                   │"
 echo "│                                                            │"
-echo "│  python train.py --dataset_id ${DATASET} \\                 "
+echo "│  python tools/train.py --dataset_id ${DATASET} \\           "
 echo "│      --config_name ${CONFIG_NAME} \\                        "
 echo "│      --llm_emb_dir data/npys_grn/ \\                        "
 echo "│      --fadj_mode spotemb_grn \\                             "
