@@ -17,13 +17,13 @@ Key features include:
 ## Table of Contents
 
 * [Installation](#installation)
-* [Embeddings (Hugging Face)](#embeddings-hugging-face)
 * [Repository Structure](#repository-structure)
 * [Data Preparation](#data-preparation)
 * [Usage](#usage)
     *   [Preprocessing](#preprocessing)
     *   [Training](#training)
 * [Model Architecture](#model-architecture)
+* [Citation](#citation)
 * [License](#license)
 
 ## Installation
@@ -42,53 +42,11 @@ conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvi
 pip install scanpy pandas numpy scipy scikit-learn matplotlib tqdm
 ```
 
-## Embeddings (Hugging Face)
-
-本项目依赖一个本地的 `embeddings/` 资源目录（文件通常较大，**不建议上传到 GitHub**，仓库已通过 `.gitignore` 忽略该目录）。
-
-`run_preprocess.sh` 会检查以下文件是否存在（缺失会直接退出）：
-
-- **`embeddings/vocab.json`**
-- **`embeddings/pretrained_gene_embeddings.pt`**
-- **`embeddings/weighted_networks_nsga2r_final.rds`**
-
-### 下载 embeddings（推荐：普通使用者）
-
-你可以把 embeddings 上传到 Hugging Face（建议 repo type 用 **dataset**），然后用下面脚本下载到本地 `embeddings/`：
-
-```bash
-# 例：把 <HF_REPO_ID> 替换为你的 Hugging Face 仓库 ID，如：ai4nucleome/GreS-embeddings
-bash scripts/hf_download_embeddings.sh <HF_REPO_ID>
-```
-
-下载完成后再运行预处理即可：
-
-```bash
-./run_preprocess.sh 151507 DLPFC
-```
-
-### 上传 embeddings（维护者/你自己）
-
-首次上传建议使用 Git LFS（Hugging Face 支持 LFS 存大文件）：
-
-```bash
-# 1) 安装并初始化 git-lfs（只需一次）
-git lfs install
-
-# 2) 登录 Hugging Face（只需一次）
-huggingface-cli login
-
-# 3) 上传
-# 例：把 <HF_REPO_ID> 替换为你的 Hugging Face 仓库 ID，如：ai4nucleome/GreS-embeddings
-bash scripts/hf_upload_embeddings.sh <HF_REPO_ID> embeddings
-```
-
 ## Repository Structure
 
 ```
 GreS/
 ├── config/                 # Configuration files (e.g., DLPFC.ini)
-├── scripts/                # Helper scripts (e.g., Hugging Face upload/download)
 ├── preprocess/             # Preprocessing pipeline
 │   ├── config.py           # Preprocessing configuration
 │   ├── construction.py     # Graph construction utilities
@@ -174,6 +132,13 @@ GreS employs a dual-encoder architecture with a gated fusion mechanism and FiLM 
 *   **ZINB Decoder**:
     *   Reconstructs gene expression data using a Zero-Inflated Negative Binomial (ZINB) distribution to handle sparsity and noise in ST data.
 
+## Citation
+
+If you use GreS in your research, please cite:
+
+```
+(Coming Soon)
+```
 
 ## License
 

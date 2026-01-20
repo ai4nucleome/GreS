@@ -22,7 +22,6 @@ set -e  # Exit on error
 if [ -z "$1" ] || [ -z "$2" ]; then
     echo "Usage: $0 <dataset_id> <config_name>"
     echo "Example: $0 151507 DLPFC"
-    echo "Example: $0 E1S1 Embryo"
     exit 1
 fi
 
