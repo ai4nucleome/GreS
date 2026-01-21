@@ -109,7 +109,7 @@ python tools/train.py \
 
 | Argument | Description | Default |
 | :--- | :--- | :--- |
-| `--dataset_id` | Identifier for the dataset (must match preprocessing) | `Mouse_Brain_Anterior` |
+| `--dataset_id` | Identifier for the dataset (must match preprocessing) | `151507` |
 | `--config_name` | Configuration file to use (e.g., `DLPFC`, `Embryo`) | Auto-inferred |
 | `--n_clusters` | Force unsupervised mode by specifying cluster count manually | `None` |
 | `--run_name` | Sub-directory name for saving results | `default` |
